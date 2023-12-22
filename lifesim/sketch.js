@@ -11,14 +11,20 @@ function setup() {
 	let cnv = createCanvas(worldSize, worldSize);
 	cnv.class("baseCanvas");
 
-	//Prevent looping until the simulation is started.
-	noLoop();
+	//Create simulation control button
+	let simBtn = createButton("Start Sim!");
+	simBtn.mousePressed(controlSim);
 
 	// Set up the data array to hold life tracking data
 	createPetriDish();
+
+	//Prevent looping until the simulation is started.
+	noLoop();
 }
 
-function draw() {}
+function draw() {
+	background(backgroundColor);
+}
 
 //FUNCTIONS FOR MANAGING THE MODEL
 function createPetriDish() {
@@ -65,6 +71,9 @@ function mousePressed(event) {
 	//Update the living or dead status of the clicked on cell
 	updateCell(petriXLoc, petriYLoc);
 }
+
+//Handles user pressing the start button
+function controlSim(event) {}
 
 //FUNCTIONS FOR MANAGING THE VIEW
 //draws a new alive cell at the current selected grid location
