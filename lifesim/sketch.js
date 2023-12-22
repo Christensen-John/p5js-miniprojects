@@ -42,18 +42,18 @@ function createPetriDish() {
 }
 
 function updateCell(x, y) {
-  //Get the alive status of the current clicked cell
-  let status = cells[x][y];
+	//Get the alive status of the current clicked cell
+	let status = cells[x][y];
 
-  //Toggle the living status of the cell
+	//Toggle the living status of the cell
 	cells[x][y] = !status;
 
-  //Hide a living cell (kill it) or draw a new cell based on the previous status
-  if(status){
-    hideDeadCell(x, y);   
-  } else {
-    drawNewCell(x, y);
-  }
+	//Hide a living cell (kill it) or draw a new cell based on the previous status
+	if (status) {
+		hideDeadCell(x, y);
+	} else {
+		drawNewCell(x, y);
+	}
 }
 
 //FUNCTIONS FOR MANAGING USER CONTROL
@@ -84,7 +84,7 @@ function hideDeadCell(x, y) {
 //Loops through the cell array and redraws all alive cells
 function drawAllCells() {
 	fill(cellColor);
-  stroke(0);)
+	stroke(0);
 	for (let i = 0; i < cells.length; i++) {
 		for (let j = 0; j < cells[i].length; j++) {
 			if (cells[i][j]) {
