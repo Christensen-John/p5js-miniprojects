@@ -37,7 +37,7 @@ function draw() {
 
 	if (isLooping()) {
 		//Create the grid for thee next generation
-		let currentLifeCycle = createNewLifeCycle();
+		currentLifeCycle = createNewLifeCycle();
 
 		//Draw the next generation's
 		currentLifeCycle.forEach((columns, row) => {
@@ -155,6 +155,7 @@ neighbors.push(currentLifeCycle[x + 1][y]);
 neighbors.push(currentLifeCycle[x + 1][y + 1]);
  */
 	if (x === 0) {
+		//Cell is the top row
 		if (y === 0) {
 			//Cell is the top left corner
 			//Right
