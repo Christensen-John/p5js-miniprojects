@@ -128,53 +128,111 @@ function determineCrowding(neighbors) {
 
 function getCellCommunity(x, y) {
 	let neighbors = [];
+	/**
 
+//Top Left
+neighbors.push(currentLifeCycle[x - 1][y - 1]);
+
+//Top
+neighbors.push(currentLifeCycle[x - 1][y]);
+
+//Top Right
+neighbors.push(currentLifeCycle[x - 1][y + 1]);
+
+//Left
+neighbors.push(currentLifeCycle[x][y - 1]);
+
+//Right
+neighbors.push(currentLifeCycle[x][y + 1]);
+
+//Bottom Left
+neighbors.push(currentLifeCycle[x + 1][y - 1]);
+
+//Bottom
+neighbors.push(currentLifeCycle[x + 1][y]);
+
+//Bottom Right
+neighbors.push(currentLifeCycle[x + 1][y + 1]);
+ */
 	if (x === 0) {
-		//There is no row of cells above the current cell
-		neighbors.push(currentLifeCycle[x + 1][y]);
 		if (y === 0) {
 			//Cell is the top left corner
+			//Right
 			neighbors.push(currentLifeCycle[x][y + 1]);
+			//Bottom
+			neighbors.push(currentLifeCycle[x + 1][y]);
+			//Bottom Right
 			neighbors.push(currentLifeCycle[x + 1][y + 1]);
-		} else if (y === this.grid_size - 1) {
+		} else if (y === __GRID_SIZE - 1) {
 			//Cell is the top right corner
+			//Left
 			neighbors.push(currentLifeCycle[x][y - 1]);
+			//Bottom Left
 			neighbors.push(currentLifeCycle[x + 1][y - 1]);
+			//Bottom
+			neighbors.push(currentLifeCycle[x + 1][y]);
 		} else {
 			//Cell is in the inner columns
-			neighbors.push(currentLifeCycle[x][y + 1]);
-			neighbors.push(currentLifeCycle[x + 1][y + 1]);
+			//Left
 			neighbors.push(currentLifeCycle[x][y - 1]);
+			//Right
+			neighbors.push(currentLifeCycle[x][y + 1]);
+			//Bottom Left
 			neighbors.push(currentLifeCycle[x + 1][y - 1]);
+			//Bottom
+			neighbors.push(currentLifeCycle[x + 1][y]);
+			//Bottom Right
+			neighbors.push(currentLifeCycle[x + 1][y + 1]);
 		}
-	} else if (y === __GRID_SIZE - 1) {
-		//There are no cells below the current cell
-		neighbors.push(currentLifeCycle[x - 1][y]);
+	} else if (x === __GRID_SIZE - 1) {
+		//The cell is in the last row
 		if (y === 0) {
 			//Cell is the bottom left corner
+			//Top
+			neighbors.push(currentLifeCycle[x - 1][y]);
+			//Top Right
 			neighbors.push(currentLifeCycle[x - 1][y + 1]);
+			//Right
 			neighbors.push(currentLifeCycle[x][y + 1]);
-		} else if (y === this.grid_size - 1) {
+		} else if (y === __GRID_SIZE - 1) {
 			//Cell is the bottom right corner
+			//Top Left
 			neighbors.push(currentLifeCycle[x - 1][y - 1]);
+			//Top
+			neighbors.push(currentLifeCycle[x - 1][y]);
+			//Left
 			neighbors.push(currentLifeCycle[x][y - 1]);
 		} else {
 			//Cell is in the inner columns
-			neighbors.push(currentLifeCycle[x - 1][y + 1]);
-			neighbors.push(currentLifeCycle[x][y + 1]);
+			//Top Left
 			neighbors.push(currentLifeCycle[x - 1][y - 1]);
+			//Top
+			neighbors.push(currentLifeCycle[x - 1][y]);
+			//Top Right
+			neighbors.push(currentLifeCycle[x - 1][y + 1]);
+			//Left
 			neighbors.push(currentLifeCycle[x][y - 1]);
+			//Right
+			neighbors.push(currentLifeCycle[x][y + 1]);
 		}
 	} else {
 		//Cell is completely surrounded by other cells
-		neighbors.push(currentLifeCycle[x - 1][y + 1]);
-		neighbors.push(currentLifeCycle[x][y + 1]);
+		//Top Left
 		neighbors.push(currentLifeCycle[x - 1][y - 1]);
-		neighbors.push(currentLifeCycle[x][y - 1]);
+		//Top
+		neighbors.push(currentLifeCycle[x - 1][y]);
+		//Top Right
 		neighbors.push(currentLifeCycle[x - 1][y + 1]);
-		neighbors.push(currentLifeCycle[x][y + 1]);
-		neighbors.push(currentLifeCycle[x - 1][y - 1]);
+		//Left
 		neighbors.push(currentLifeCycle[x][y - 1]);
+		//Right
+		neighbors.push(currentLifeCycle[x][y + 1]);
+		//Bottom Left
+		neighbors.push(currentLifeCycle[x + 1][y - 1]);
+		//Bottom
+		neighbors.push(currentLifeCycle[x + 1][y]);
+		//Bottom Right
+		neighbors.push(currentLifeCycle[x + 1][y + 1]);
 	}
 	return neighbors;
 }
