@@ -1,29 +1,58 @@
-let __WORLD_SIZE = 800;
-let __CELL_SIZE = 8;
-let current_life_cycle;
-let next_life_cycle;
-let cell_color = 20;
-let background_color = 220;
+const __WORLD_SIZE = 800;
+const __CELL_SIZE = 8;
+const __GRID_SIZE = __WORLD_SIZE / __CELL_SIZE;
+let cnv;
+let simBtn;
+let currentLifeCycle;
+let nextCellLifeCycle;
+let cellColor = 20;
+let backgroundColor = 220;
+let cellStroke = 0;
+let loopCounter = 0;
 
 //P5 JS BASE FUNCTIONS
 function setup() {
+	frameRate(1);
 	//Create the base canvas
-	let cnv = createCanvas(__WORLD_SIZE, __WORLD_SIZE);
+	cnv = createCanvas(__WORLD_SIZE, __WORLD_SIZE);
+	cnv.mousePressed(canvasPressed);
 	cnv.class("baseCanvas");
 
 	//Create simulation control button
-	let simBtn = createButton("Start Sim!");
+	simBtn = createButton("Start Sim!");
 	simBtn.mousePressed(controlSim);
 
 	//Create test cell grid
-	current_life_cycle = createCellGrid(__WORLD_SIZE / __CELL_SIZE);
+	currentLifeCycle = createCellGrid(__GRID_SIZE);
+
+	//Disable stroke to prevent cells subtly overlapping
+	noStroke();
 
 	//Prevent looping until the simulation is started.
 	noLoop();
 }
 
 function draw() {
-	background(background_color);
+	background(backgroundColor);
+
+	if (isLooping()) {
+		//Create the grid for thee next generation
+		let currentLifeCycle = createNewLifeCycle();
+
+		//Draw the next generation's
+		currentLifeCycle.forEach((columns, row) => {
+			columns.forEach((cell, column) => {
+				console.log(
+					`Cell value at row: ${row} and column: ${column} is: ${cell}`
+				);
+				if (cell) {
+					fill(cellColor);
+					square(row * __CELL_SIZE, column * __CELL_SIZE, __CELL_SIZE);
+				}
+			});
+		});
+		console.log(`Times looped: ${loopCounter++}`);
+	}
 }
 
 //FUNCTIONS FOR MANAGING THE MODEL
@@ -32,11 +61,11 @@ function draw() {
 function updateCell(x, y) {
 	//Get the alive status of the current clicked cell
 	//Y and X are switched or the model array does not match the same grid direction as the view
-	let status = current_life_cycle[y][x];
+	let status = currentLifeCycle[x][y];
 
 	//Toggle the living status of the cell
 	//Y and X are switched or the model array does not match the same grid direction as the view
-	current_life_cycle[y][x] = !status;
+	currentLifeCycle[x][y] = !status;
 
 	//Hide a living cell (kill it) or draw a new cell based on the previous status
 	if (status) {
@@ -46,23 +75,129 @@ function updateCell(x, y) {
 	}
 }
 
-function createNewLifeCycle() {}
+//Creates and returns the next generation of cells based on the current life cycle. Returns a new array representing cell community to be drawn.
+function createNewLifeCycle() {
+	//The new grid which will hold the grid representing the next generation of cells
+	let newCellGrid = [];
+	//Loop through each of the rows
+	currentLifeCycle.forEach((row, rowIndex) => {
+		//A array to hold a new row of cells
+		let newCellRow = [];
+		//Loop through each of the cells in a row (each of the columns)
+		row.forEach((currentGenCell, colIndex) => {
+			//Determine the each cell's 'community' or neighbors in the current cell lifecycle
+			let currentCellCommunity = getCellCommunity(rowIndex, colIndex);
+			//Determine the survival score of each cell and put that value into the next generation grid
+			newCellRow.push(determineSurvival(currentGenCell, currentCellCommunity));
+		});
+		newCellGrid.push(newCellRow);
+	});
+	return newCellGrid;
+}
+
+//Determines if a given cell will survive, die, or come alive based on the current generation
+//Returns false if the cell dies (or stays dead) and true if the cell survives (or comes alive)
+function determineSurvival(cell, neighbors) {
+	let crowdingIndex = determineCrowding(neighbors);
+	if (cell && crowdingIndex < 2) {
+		//Live cell dies from under population
+		return false;
+	} else if (cell && crowdingIndex <= 3) {
+		//Live cell stays alive for the next generation
+		return true;
+	} else if (cell && crowdingIndex > 3) {
+		//Live cell dies from overcrowding
+		return false;
+	} else if (!cell && crowdingIndex === 3) {
+		//Dead cell comes alive from reproduction
+		return true;
+	} else {
+		//Catch all scenario.
+		return false;
+	}
+}
+
+//Counts the number of living neighbors of a cell.
+function determineCrowding(neighbors) {
+	let neighbor_count = 0;
+	neighbors.forEach((neighbor) => {
+		if (neighbor) neighbor_count++;
+	});
+	return neighbor_count;
+}
+
+function getCellCommunity(x, y) {
+	let neighbors = [];
+
+	if (x === 0) {
+		//There is no row of cells above the current cell
+		neighbors.push(currentLifeCycle[x + 1][y]);
+		if (y === 0) {
+			//Cell is the top left corner
+			neighbors.push(currentLifeCycle[x][y + 1]);
+			neighbors.push(currentLifeCycle[x + 1][y + 1]);
+		} else if (y === this.grid_size - 1) {
+			//Cell is the top right corner
+			neighbors.push(currentLifeCycle[x][y - 1]);
+			neighbors.push(currentLifeCycle[x + 1][y - 1]);
+		} else {
+			//Cell is in the inner columns
+			neighbors.push(currentLifeCycle[x][y + 1]);
+			neighbors.push(currentLifeCycle[x + 1][y + 1]);
+			neighbors.push(currentLifeCycle[x][y - 1]);
+			neighbors.push(currentLifeCycle[x + 1][y - 1]);
+		}
+	} else if (y === __GRID_SIZE - 1) {
+		//There are no cells below the current cell
+		neighbors.push(currentLifeCycle[x - 1][y]);
+		if (y === 0) {
+			//Cell is the bottom left corner
+			neighbors.push(currentLifeCycle[x - 1][y + 1]);
+			neighbors.push(currentLifeCycle[x][y + 1]);
+		} else if (y === this.grid_size - 1) {
+			//Cell is the bottom right corner
+			neighbors.push(currentLifeCycle[x - 1][y - 1]);
+			neighbors.push(currentLifeCycle[x][y - 1]);
+		} else {
+			//Cell is in the inner columns
+			neighbors.push(currentLifeCycle[x - 1][y + 1]);
+			neighbors.push(currentLifeCycle[x][y + 1]);
+			neighbors.push(currentLifeCycle[x - 1][y - 1]);
+			neighbors.push(currentLifeCycle[x][y - 1]);
+		}
+	} else {
+		//Cell is completely surrounded by other cells
+		neighbors.push(currentLifeCycle[x - 1][y + 1]);
+		neighbors.push(currentLifeCycle[x][y + 1]);
+		neighbors.push(currentLifeCycle[x - 1][y - 1]);
+		neighbors.push(currentLifeCycle[x][y - 1]);
+		neighbors.push(currentLifeCycle[x - 1][y + 1]);
+		neighbors.push(currentLifeCycle[x][y + 1]);
+		neighbors.push(currentLifeCycle[x - 1][y - 1]);
+		neighbors.push(currentLifeCycle[x][y - 1]);
+	}
+	return neighbors;
+}
 
 //FUNCTIONS FOR MANAGING USER CONTROL
-function mousePressed(event) {
+function canvasPressed(event) {
 	//Save the the cell that is clicked on and translate that to the corresponding arral location
 	let petriXLoc = Math.floor(mouseX / __CELL_SIZE);
 	let petriYLoc = Math.floor(mouseY / __CELL_SIZE);
 
+	console.log("I was activated by the button?!");
 	//Update the living or dead status of the clicked on cell
 	updateCell(petriXLoc, petriYLoc);
 }
 
 //Handles user pressing the start button
 function controlSim(event) {
+	console.log("I am now supposed to start looping!");
 	if (isLooping()) {
+		simBtn.html("Start sim!");
 		noLoop();
 	} else {
+		simBtn.html("Stop sim!");
 		loop();
 		draw();
 	}
@@ -72,15 +207,13 @@ function controlSim(event) {
 //draws a new alive cell at the current selected grid location
 function drawNewCell(x, y) {
 	fill(cellColor);
-	stroke(0);
-	square(x * cellSize, y * cellSize, cellSize, 2);
+	square(x * __CELL_SIZE, y * __CELL_SIZE, __CELL_SIZE);
 }
 
 //draws a dead cell which hides an alive cell making the visual appear dead
 function hideDeadCell(x, y) {
 	fill(backgroundColor);
-	stroke(backgroundColor);
-	square(x * cellSize, y * cellSize, cellSize, 2);
+	square(x * __CELL_SIZE, y * __CELL_SIZE, __CELL_SIZE);
 }
 
 //Loops through the cell array and redraws all alive cells
@@ -90,18 +223,18 @@ function drawAllCells() {
 	for (let i = 0; i < cells.length; i++) {
 		for (let j = 0; j < cells[i].length; j++) {
 			if (currentLifeCycle[i][j]) {
-				square(i * cellSize, j * cellSize, cellSize, 2);
+				square(i * __CELL_SIZE, j * __CELL_SIZE, __CELL_SIZE, 2);
 			}
 		}
 	}
 }
 
 // function updateGrid() {
-// 	for (let i = 0; i < worldSize; i += cellSize) {
-// 		for (let j = 0; j < worldSize; j += cellSize) {
+// 	for (let i = 0; i < worldSize; i += __CELL_SIZE) {
+// 		for (let j = 0; j < worldSize; j += __CELL_SIZE) {
 // 			if (cells[i][j]) {
 // 				fill(255);
-// 				square(i, j, cellSize, 2);
+// 				square(i, j, __CELL_SIZE, 2);
 // 			} else {
 // 						fill(10);
 // 			}
@@ -121,157 +254,3 @@ function drawAllCells() {
  * TODO:
  * 1. Create clearAll button
  */
-
-class life_grid {
-	//Instance property where the cells will be kept
-	life_grid = [];
-	grid_size = 0;
-
-	constructor(size) {
-		this.grid_size = size;
-		this.life_grid = createGrid(grid_size);
-	}
-
-	//Creates and returns a 2d array of the size of the life grid. Every value in the array is a dead cell (false)
-	createGrid(size) {
-		//Create the array to hold the rows of cells
-		let grid = [];
-		//loop through the number of rows
-		for (let i = 0; i < size; i++) {
-			//Create an array to hold the array of cells
-			let row = [];
-			//Loop though the columns of cells
-			for (let j = 0; j < size; j++) {
-				//create a new cell for each location
-				let cell = new life_cell(i, j, false);
-				//Add the cell to the row
-				row.push(cell);
-			}
-			//Add the row to the base grid array
-			grid.push(row);
-		}
-		//return the created grid of cells
-		return grid;
-	}
-
-	//Toggles the living status of the cell at location cellX, cellY. Returns the new living value
-	toggleLifeStatusOfCell(cellX, cellY) {
-		return this.life_grid[cellX][cellY].changeLifeStatus();
-	}
-
-	//Returns an array of life_cells representingi a row of the grid;
-	getGridRow(row) {
-		return this.life_grid[row];
-	}
-
-	getCell(x, y) {
-		return this.life_grid[x][y];
-	}
-
-	//Generates a new grid of cells based on the previous generation
-	getNextGeneration() {
-		let nextGrid = createGrid(this.grid_size);
-	}
-
-	getCellNeighbors(cell) {
-		let neighbors = [];
-		if (cell.row() === 0) {
-			//There is no row of cells above the current cell
-			if (cell.column() === 0) {
-				//Cell is the top left corner
-				neighbors.push(getCell(cell.row(), cell.column() + 1));
-				neighbors.push(getCell(cell.row() + 1, cell.column()));
-				neighbors.push(getCell(cell.row() + 1, cell.column() + 1));
-			} else if (cell.column() === this.grid_size - 1) {
-				//Cell is the top right corner
-				neighbors.push(getCell(cell.row(), cell.column() - 1));
-				neighbors.push(getCell(cell.row() + 1, cell.column() - 1));
-				neighbors.push(getCell(cell.row() + 1, cell.column()));
-			} else {
-				//Cell is in the inner columns
-				neighbors.push(getCell(cell.row(), cell.column() - 1));
-				neighbors.push(getCell(cell.row(), cell.column() + 1));
-				neighbors.push(getCell(cell.row() + 1, cell.column() - 1));
-				neighbors.push(getCell(cell.row() + 1, cell.column()));
-				neighbors.push(getCell(cell.row() + 1, cell.column() + 1));
-			}
-		} else if (cell.row() === this.grid_size - 1) {
-			//There are no cells below the current cell
-			if (cell.column() === 0) {
-				//Cell is the bottom left corner
-				neighbors.push(getCell(cell.row(), cell.column() + 1));
-				neighbors.push(getCell(cell.row() - 1, cell.column()));
-				neighbors.push(getCell(cell.row() - 1, cell.column() + 1));
-			} else if (cell.column() === this.grid_size - 1) {
-				//Cell is the bottom right corner
-				neighbors.push(getCell(cell.row(), cell.column() - 1));
-				neighbors.push(getCell(cell.row() - 1, cell.column() - 1));
-				neighbors.push(getCell(cell.row() - 1, cell.column()));
-			} else {
-				//Cell is in the inner columns
-				neighbors.push(getCell(cell.row(), cell.column() - 1));
-				neighbors.push(getCell(cell.row(), cell.column() + 1));
-				neighbors.push(getCell(cell.row() - 1, cell.column() - 1));
-				neighbors.push(getCell(cell.row() - 1, cell.column()));
-				neighbors.push(getCell(cell.row() - 1, cell.column() + 1));
-			}
-		} else {
-			//Cell is completely surrounded by other cells
-			neighbors.push(getCell(cell.row(), cell.column() - 1)); //left
-			neighbors.push(getCell(cell.row(), cell.column() + 1)); //right
-			neighbors.push(getCell(cell.row() - 1, cell.column() - 1)); //top left
-			neighbors.push(getCell(cell.row() - 1, cell.column())); //top
-			neighbors.push(getCell(cell.row() - 1, cell.column() + 1)); //top right
-			neighbors.push(getCell(cell.row() + 1, cell.column() - 1)); //bottom left
-			neighbors.push(getCell(cell.row() + 1, cell.column())); //bottom
-			neighbors.push(getCell(cell.row() + 1, cell.column() + 1)); //bottom right
-		}
-		return neighbors;
-	}
-}
-/**
-	,_,_,_,
-	|_|_|_|
-	|_|_|_|
-	|_|_|_|
-	|_|_|_|
- */
-
-class life_cell {
-	x_location = 0;
-	y_location = 0;
-	living = false;
-
-	//Creates a new life_cell that has coordinates in a life_grid. Has a life status that defaults to false
-	constructor(x, y, startAlive = false) {
-		this.x_location = x;
-		this.y_location = y;
-		this.living = startAlive;
-	}
-
-	//Returns the life status of the cell
-	get isAlive() {
-		return this.living;
-	}
-
-	//Returns the location of the cell in the life_grid
-	get location() {
-		return [this.x_location, this.y_location];
-	}
-
-	//Returns the row of the cell
-	get row() {
-		return this.x_location;
-	}
-
-	//Returns the column of the cell
-	get column() {
-		return this.y_location;
-	}
-
-	//Toggles the life status of the cell. Returns the new life value
-	changeLifeStatus() {
-		this.living = !this.living;
-		return this.living;
-	}
-}
