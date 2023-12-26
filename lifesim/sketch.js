@@ -12,7 +12,7 @@ let loopCounter = 0;
 
 //P5 JS BASE FUNCTIONS
 function setup() {
-	frameRate(1);
+	frameRate(3);
 	//Create the base canvas
 	cnv = createCanvas(__WORLD_SIZE, __WORLD_SIZE);
 	cnv.mousePressed(canvasPressed);
