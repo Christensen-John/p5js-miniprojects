@@ -46,12 +46,14 @@ function draw() {
 					`Cell value at row: ${row} and column: ${column} is: ${cell}`
 				);
 				if (cell) {
-					fill(cellColor);
-					square(row * __CELL_SIZE, column * __CELL_SIZE, __CELL_SIZE);
+					// square(row * __CELL_SIZE, column * __CELL_SIZE, __CELL_SIZE);
+					drawNewCell(row, column);
 				}
 			});
 		});
 		console.log(`Times looped: ${loopCounter++}`);
+	} else {
+		drawAllCells();
 	}
 }
 
@@ -277,12 +279,12 @@ function hideDeadCell(x, y) {
 
 //Loops through the cell array and redraws all alive cells
 function drawAllCells() {
-	fill(cellColor);
-	stroke(0);
 	for (let i = 0; i < cells.length; i++) {
 		for (let j = 0; j < cells[i].length; j++) {
 			if (currentLifeCycle[i][j]) {
-				square(i * __CELL_SIZE, j * __CELL_SIZE, __CELL_SIZE, 2);
+				drawNewCell(i, j);
+			} else {
+				hideDeadCell(i, j);
 			}
 		}
 	}
