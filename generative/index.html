@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tube Grid</title>
-    <link rel="stylesheet" href="/tube-grid/style.css" />
+    <link rel="stylesheet" href="/styles/resetStyle.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
 
     <!-- p5 scripts -->
     <script src="/p5js/p5.js" type="module"></script>
@@ -21,7 +22,11 @@
       <div class="control-container">
         <h2>Drawing Controls</h2>
         <form class="control-form">
-          <ul class="control-list"></ul>
+          <ul class="control-list">
+            <li>
+              <input type="range" name="strokeWeight" id="change-stroke" />
+            </li>
+          </ul>
         </form>
       </div>
       <div class="canvas-container" id="canvas-container"></div>
